@@ -7,7 +7,7 @@ import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiHangupException;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
-import org.lotterm.asterisk.epursuit.ScotlandYard;
+import org.lotterm.asterisk.epursuit.EPursuit;
 
 /**
  * @author thomas
@@ -59,12 +59,12 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 
 			if (recordList != null && recordList.size() > 0) {
 				// ...play the introduction...
-				this.streamFile(ScotlandYard.properties.getProperty("agentsIntro"));
+				this.streamFile(EPursuit.properties.getProperty("agentsIntro"));
 
 				// ...and play the recording
 				for (String recording : recordList) {
 					this.streamFile("beep");
-					this.streamFile(ScotlandYard.properties.getProperty("recordPath") + recording);
+					this.streamFile(EPursuit.properties.getProperty("recordPath") + recording);
 				}
 
 			} else {
