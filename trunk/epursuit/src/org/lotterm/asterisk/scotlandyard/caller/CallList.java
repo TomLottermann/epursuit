@@ -2,10 +2,11 @@ package org.lotterm.asterisk.scotlandyard.caller;
 
 import java.util.ArrayList;
 
+/**
+ * @author thomas
+ * TODO: Deprecated?
+ */
 public class CallList extends ArrayList<Call> {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**

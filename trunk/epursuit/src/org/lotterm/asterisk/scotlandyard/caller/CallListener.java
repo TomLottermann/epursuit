@@ -2,6 +2,10 @@ package org.lotterm.asterisk.scotlandyard.caller;
 
 import org.lotterm.asterisk.scotlandyard.agi.Agi;
 
+/**
+ * @author thomas
+ * connects Caller with Call
+ */
 public interface CallListener {
 	/**
 	 * Triggered if the call is not answered as many times as the Config says (maxTries)

@@ -18,6 +18,10 @@ import org.lotterm.asterisk.scotlandyard.agi.Agi;
 import org.lotterm.asterisk.scotlandyard.agi.AgiCallListener;
 import org.lotterm.asterisk.scotlandyard.caller.originate.OriginateCallbackAdapter;
 
+/**
+ * @author thomas
+ * Call class. Makes and observes call.
+ */
 public class Call extends Thread {
 
 	private Logger log = Logger.getLogger(this.getClass().getCanonicalName());
@@ -41,10 +45,10 @@ public class Call extends Thread {
 	/**
 	 * Constructs the object and starts the thread
 	 * 
-	 * @param destination
-	 * @param agi
-	 * @param managerConnection
-	 * @param asteriskServer
+	 * @param destination			Call destination
+	 * @param agi					Agi module associated with the call
+	 * @param managerConnection		Necessary for control
+	 * @param asteriskServer		Necessary for control
 	 */
 	public Call(final String destination, final Agi agi, ManagerConnection managerConnection, DefaultAsteriskServer asteriskServer) {
 		this.destination = destination;
@@ -125,6 +129,9 @@ public class Call extends Thread {
 
 	}
 
+	/**
+	 * All the magic happens here. Call and register listeners
+	 */
 	private void makeCall() {
 		// send the originate action (Call)
 		this.asteriskServer.originateAsync(originateAction, new OriginateCallbackAdapter() {
@@ -132,17 +139,19 @@ public class Call extends Thread {
 			public void onDialing(final AsteriskChannel asteriskChannel) {
 				log.log(Level.INFO, "Dialing: " + asteriskChannel.getName());
 				currentChannel = asteriskChannel.getName();
+				// Listen for cool stuff like "ringing"
 				asteriskChannel.addPropertyChangeListener(new PropertyChangeListener() {
 
 					@Override
 					public void propertyChange(PropertyChangeEvent evt) {
+						// is the phone ringing?
 						if (evt.getPropertyName().equals("state") && evt.getNewValue().toString().equals("RINGING")) {
+							// Schedule hangup timeout
 							timeoutTimer.schedule(new TimerTask() {
 
 								@Override
 								public void run() {
 									if (!success) {
-										log.log(Level.INFO, "Channel not answered: " + currentChannel);
 										asteriskServer.getChannelByName(currentChannel).hangup();
 										// no "noAnswer()" called here because a onNoAnswer event will come in anyway
 									}
@@ -162,6 +171,7 @@ public class Call extends Thread {
 
 			@Override
 			public void onNoAnswer(AsteriskChannel asteriskChannel) {
+				log.log(Level.INFO, "Channel not answered: " + currentChannel);
 				noAnswer();
 			}
 
