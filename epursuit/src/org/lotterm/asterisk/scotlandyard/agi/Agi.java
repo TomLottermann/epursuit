@@ -1,5 +1,9 @@
 package org.lotterm.asterisk.scotlandyard.agi;
 
+/**
+ * @author thomas
+ * Agi interface (necessary for the Call to be more generic)
+ */
 public interface Agi {
 
 	/**

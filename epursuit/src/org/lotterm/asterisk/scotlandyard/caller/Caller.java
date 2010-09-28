@@ -18,6 +18,9 @@ import org.lotterm.asterisk.scotlandyard.agi.AgentAgi;
 import org.lotterm.asterisk.scotlandyard.agi.Agi;
 import org.lotterm.asterisk.scotlandyard.agi.MrXAgi;
 
+/**
+ * @author thomas Sends calls and organizes order
+ */
 public class Caller {
 
 	private Logger log = Logger.getLogger(this.getClass().getCanonicalName());
@@ -30,19 +33,24 @@ public class Caller {
 	// Live connection to Asterisk
 	private DefaultAsteriskServer asteriskServer;
 
+	// Call list with the destinations
 	private final ArrayList<String> mrxList = new ArrayList<String>();
 	private final ArrayList<String> agentList = new ArrayList<String>();
-	
+
+	// Counter in order to recognize when everyone has been called
 	private int unfinishedMrXCalls = 0;
 	private int unfinishedAgentCalls = 0;
 
+	// The Agi modules where the calls are sent to
 	private MrXAgi mrxAgi;
 	private AgentAgi agentAgi;
 
 	/**
-	 * Setup listener, connect to Manager interface of local Asterisk
+	 * Connect to Manager interface of local Asterisk, AsteriskServer and start
+	 * calling MrX
 	 * 
-	 * @param mrx
+	 * @param agentAgi
+	 * @param mrxAgi
 	 */
 	public Caller(AgentAgi agentAgi, MrXAgi mrxAgi) {
 
@@ -51,11 +59,11 @@ public class Caller {
 
 		// Read in all Agents
 		this.readAgents();
-		
-		
-		this.mrxAgi=mrxAgi;
+
+		this.mrxAgi = mrxAgi;
 		this.agentAgi = agentAgi;
 
+		// Start the ManagerFactory and connect up a manager
 		// TODO: DEV: change 192.168.2.33 to localhost
 		ManagerConnectionFactory factory = new ManagerConnectionFactory("192.168.2.33", ScotlandYard.properties.getProperty("managerUser"), ScotlandYard.properties.getProperty("managerPassword"));
 
@@ -66,22 +74,24 @@ public class Caller {
 		try {
 			this.managerConnection.login();
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.WARNING, "Problem occurred while connecting to manager interface: " + e.getMessage());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (AuthenticationFailedException e) {
-			System.err.println("Authentication with manager failed.");
+			log.log(Level.SEVERE, "Authentication with manager failed.");
 			e.printStackTrace();
 		} catch (TimeoutException e) {
-			System.err.println("Timeout during manager authentication.");
+			log.log(Level.SEVERE, "Timeout during manager authentication.");
 			e.printStackTrace();
 		}
 
+		// Start calling MrX
 		this.callMrX();
 	}
 
+	/**
+	 * Read in all MrX destinations
+	 */
 	private void readMrX() {
 		this.mrxList.clear();
 		try {
@@ -96,11 +106,14 @@ public class Caller {
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
-			System.err.println("mrxList could not be found!");
+			log.log(Level.SEVERE, "mrxList could not be found at \"" + ScotlandYard.properties.getProperty("mrxList") + "\"");
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Read in all Agent destinations
+	 */
 	private void readAgents() {
 		try {
 			BufferedReader agentReader = new BufferedReader(new FileReader(ScotlandYard.properties.getProperty("agentList")));
@@ -115,11 +128,14 @@ public class Caller {
 			}
 
 		} catch (FileNotFoundException e) {
-			System.err.println("agentList could not be found!");
+			log.log(Level.SEVERE, "agentList could not be found at \"" + ScotlandYard.properties.getProperty("agentList") + "\"");
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Are all MrX calls finished? => set records and call agents
+	 */
 	private void testForMrXFinished() {
 		if (unfinishedMrXCalls == 0) {
 			log.log(Level.INFO, "Done with Mr X");
@@ -129,6 +145,9 @@ public class Caller {
 		}
 	}
 
+	/**
+	 * Are all Agent calls finished?
+	 */
 	private void testForAgentsFinished() {
 		if (unfinishedAgentCalls == 0) {
 			log.log(Level.INFO, "DONE with Agents");
@@ -137,41 +156,40 @@ public class Caller {
 		}
 	}
 
+	/**
+	 * Call all MrX
+	 */
 	private void callMrX() {
-		try {
+		for (String mrxDestination : mrxList) {
+			log.log(Level.INFO, "Calling: " + mrxDestination);
+			Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
+			call.addListener(new CallListener() {
 
-			for (String mrxDestination : mrxList) {
-				log.log(Level.INFO, "Calling: " + mrxDestination);
-				Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
-				call.addListener(new CallListener() {
+				@Override
+				public void callNotAnswered(String destination, Agi extension) {
+					// give up calling that guy!
+					log.log(Level.WARNING, "Giving up to call " + destination + ". The number is perhabs wrong.");
+					unfinishedMrXCalls--;
 
-					@Override
-					public void callNotAnswered(String destination, Agi extension) {
-						// give up calling that guy!
-						log.log(Level.WARNING, "Giving up to call " + destination);
-						unfinishedMrXCalls--;
+					testForMrXFinished();
+				}
 
-						testForMrXFinished();
-					}
+				@Override
+				public void callFinished(String destination, Agi extension, String... record) {
+					// Call successful => one call less to bother about and one more record to add.
+					unfinishedMrXCalls--;
 
-					@Override
-					public void callFinished(String destination, Agi extension, String... record) {
-						unfinishedMrXCalls--;
-						
-						recordList.add(record[0]);
+					recordList.add(record[0]);
 
-						testForMrXFinished();
-					}
-				});
-			}
-
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+					testForMrXFinished();
+				}
+			});
 		}
-
 	}
 
+	/**
+	 * Call all agents
+	 */
 	private void callAgents() {
 		try {
 
@@ -191,6 +209,7 @@ public class Caller {
 
 					@Override
 					public void callFinished(String destination, Agi extension, String... record) {
+						// Call successful => one call less to bother about.
 						unfinishedAgentCalls--;
 
 						testForAgentsFinished();

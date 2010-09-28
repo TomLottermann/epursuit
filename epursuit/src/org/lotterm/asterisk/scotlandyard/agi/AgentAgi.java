@@ -9,6 +9,10 @@ import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
 import org.lotterm.asterisk.scotlandyard.ScotlandYard;
 
+/**
+ * @author thomas
+ * Agi module which plays the recent recordList
+ */
 public class AgentAgi extends BaseAgiScript implements Agi {
 
 	protected String extension = "agentAgi";

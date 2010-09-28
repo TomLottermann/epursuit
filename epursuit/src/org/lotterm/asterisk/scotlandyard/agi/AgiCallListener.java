@@ -1,5 +1,9 @@
 package org.lotterm.asterisk.scotlandyard.agi;
 
+/**
+ * @author thomas
+ * Tells useful call events
+ */
 public interface AgiCallListener {
 	
 	/**

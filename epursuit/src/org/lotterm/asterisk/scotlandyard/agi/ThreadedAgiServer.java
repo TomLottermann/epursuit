@@ -5,6 +5,10 @@ import java.io.IOException;
 import org.asteriskjava.fastagi.DefaultAgiServer;
 import org.asteriskjava.fastagi.SimpleMappingStrategy;
 
+/**
+ * @author thomas
+ * Starts up the Agi Server in a Thread
+ */
 public class ThreadedAgiServer extends Thread {
 	private DefaultAgiServer server;
 
@@ -18,10 +22,8 @@ public class ThreadedAgiServer extends Thread {
 		try {
 			this.server.startup();
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

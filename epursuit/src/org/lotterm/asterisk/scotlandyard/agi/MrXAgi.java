@@ -12,8 +12,8 @@ import org.asteriskjava.fastagi.BaseAgiScript;
 import org.lotterm.asterisk.scotlandyard.ScotlandYard;
 
 /**
- * @author thomas AGI component which receives all the calls from the manager
- *         (Yes it only receives!)
+ * @author thomas 
+ * Agi module which records the calls to MrX
  */
 public class MrXAgi extends BaseAgiScript implements Agi {
 
