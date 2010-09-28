@@ -17,7 +17,7 @@ import org.lotterm.asterisk.epursuit.caller.Caller;
 /**
  * @author thomas
  */
-public class ScotlandYard {
+public class EPursuit {
 
 	public static Properties properties = new Properties();
 	/**
@@ -25,7 +25,7 @@ public class ScotlandYard {
 	 * 
 	 * @param location
 	 */
-	public ScotlandYard(String location) {
+	public EPursuit(String location) {
 		try {
 			// load properties
 			this.loadProperties(location);
@@ -89,7 +89,7 @@ public class ScotlandYard {
 	 */
 	public static void main(String[] args) throws IllegalStateException, IOException {
 		if(args.length==1) {
-			new ScotlandYard(args[0]);			
+			new EPursuit(args[0]);			
 		} else {
 			System.out.println("Wrong syntax!");
 			System.out.println("Please add one parameter which leads to the config file!");

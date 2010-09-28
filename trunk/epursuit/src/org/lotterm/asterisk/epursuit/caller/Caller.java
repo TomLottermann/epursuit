@@ -13,7 +13,7 @@ import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.TimeoutException;
-import org.lotterm.asterisk.epursuit.ScotlandYard;
+import org.lotterm.asterisk.epursuit.EPursuit;
 import org.lotterm.asterisk.epursuit.agi.AgentAgi;
 import org.lotterm.asterisk.epursuit.agi.Agi;
 import org.lotterm.asterisk.epursuit.agi.MrXAgi;
@@ -64,7 +64,7 @@ public class Caller {
 		this.agentAgi = agentAgi;
 
 		// Start the ManagerFactory and connect up a manager
-		ManagerConnectionFactory factory = new ManagerConnectionFactory(ScotlandYard.properties.getProperty("asteriskHost"), ScotlandYard.properties.getProperty("managerUser"), ScotlandYard.properties.getProperty("managerPassword"));
+		ManagerConnectionFactory factory = new ManagerConnectionFactory(EPursuit.properties.getProperty("asteriskHost"), EPursuit.properties.getProperty("managerUser"), EPursuit.properties.getProperty("managerPassword"));
 
 		this.managerConnection = factory.createManagerConnection();
 
@@ -91,10 +91,10 @@ public class Caller {
 	/**
 	 * Read in all MrX destinations
 	 */
-	private void readMrX() {
+	public void readMrX() {
 		this.mrxList.clear();
 		try {
-			BufferedReader mrxReader = new BufferedReader(new FileReader(ScotlandYard.properties.getProperty("mrxList")));
+			BufferedReader mrxReader = new BufferedReader(new FileReader(EPursuit.properties.getProperty("mrxList")));
 			String mrxLine;
 			try {
 				while ((mrxLine = mrxReader.readLine()) != null) {
@@ -105,7 +105,7 @@ public class Caller {
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, "mrxList could not be found at \"" + ScotlandYard.properties.getProperty("mrxList") + "\"");
+			log.log(Level.SEVERE, "mrxList could not be found at \"" + EPursuit.properties.getProperty("mrxList") + "\"");
 			e.printStackTrace();
 		}
 	}
@@ -113,9 +113,9 @@ public class Caller {
 	/**
 	 * Read in all Agent destinations
 	 */
-	private void readAgents() {
+	public void readAgents() {
 		try {
-			BufferedReader agentReader = new BufferedReader(new FileReader(ScotlandYard.properties.getProperty("agentList")));
+			BufferedReader agentReader = new BufferedReader(new FileReader(EPursuit.properties.getProperty("agentList")));
 			String agentLine;
 			try {
 				while ((agentLine = agentReader.readLine()) != null) {
@@ -127,7 +127,7 @@ public class Caller {
 			}
 
 		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, "agentList could not be found at \"" + ScotlandYard.properties.getProperty("agentList") + "\"");
+			log.log(Level.SEVERE, "agentList could not be found at \"" + EPursuit.properties.getProperty("agentList") + "\"");
 			e.printStackTrace();
 		}
 	}
@@ -149,7 +149,7 @@ public class Caller {
 	 */
 	private void testForAgentsFinished() {
 		if (unfinishedAgentCalls == 0) {
-			log.log(Level.INFO, "DONE with Agents");
+			log.log(Level.INFO, "Done with Agents");
 
 			// managerConnection.logoff();
 		}
@@ -158,7 +158,7 @@ public class Caller {
 	/**
 	 * Call all MrX
 	 */
-	private void callMrX() {
+	public void callMrX() {
 		for (String mrxDestination : mrxList) {
 			log.log(Level.INFO, "Calling: " + mrxDestination);
 			Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
@@ -189,7 +189,7 @@ public class Caller {
 	/**
 	 * Call all agents
 	 */
-	private void callAgents() {
+	public void callAgents() {
 		try {
 
 			for (String agentDestination : agentList) {

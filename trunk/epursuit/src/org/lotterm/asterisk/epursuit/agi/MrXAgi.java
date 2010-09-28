@@ -9,7 +9,7 @@ import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiHangupException;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
-import org.lotterm.asterisk.epursuit.ScotlandYard;
+import org.lotterm.asterisk.epursuit.EPursuit;
 
 /**
  * @author thomas 
@@ -53,7 +53,7 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 			int name;
 			do {
 				name = Math.abs(this.random.nextInt());
-				fileName = ScotlandYard.properties.getProperty("recordPath") + name;
+				fileName = EPursuit.properties.getProperty("recordPath") + name;
 			} while (new File(fileName).exists());
 
 			// Call all listeners
@@ -62,11 +62,11 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 			}
 
 			// ...play the introduction...
-			this.streamFile(ScotlandYard.properties.getProperty("mrxIntro"));
+			this.streamFile(EPursuit.properties.getProperty("mrxIntro"));
 
 			// ..record the file.
-			this.recordFile(fileName, "gsm", "brauchkeinschwein", new Integer(ScotlandYard.properties.getProperty("maxTalkTime")), 0, new Boolean(ScotlandYard.properties.getProperty("beep")),
-					new Integer(ScotlandYard.properties.getProperty("maxWaitTime")));
+			this.recordFile(fileName, "gsm", "brauchkeinschwein", new Integer(EPursuit.properties.getProperty("maxTalkTime")), 0, new Boolean(EPursuit.properties.getProperty("beep")),
+					new Integer(EPursuit.properties.getProperty("maxWaitTime")));
 			// Call all listeners
 			for (AgiCallListener listener : listeners) {
 				listener.callFinished(channel.getName(), String.valueOf(name));

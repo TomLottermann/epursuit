@@ -13,7 +13,7 @@ import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.action.OriginateAction;
-import org.lotterm.asterisk.epursuit.ScotlandYard;
+import org.lotterm.asterisk.epursuit.EPursuit;
 import org.lotterm.asterisk.epursuit.agi.Agi;
 import org.lotterm.asterisk.epursuit.agi.AgiCallListener;
 import org.lotterm.asterisk.epursuit.caller.originate.OriginateCallbackAdapter;
@@ -110,7 +110,7 @@ public class Call extends Thread {
 		tries++;
 
 		// too many tries => tell listeners
-		if (tries >= new Integer(ScotlandYard.properties.getProperty("maxTries"))) {
+		if (tries >= new Integer(EPursuit.properties.getProperty("maxTries"))) {
 			for (CallListener listener : listeners) {
 				listener.callNotAnswered(destination, agi);
 			}
@@ -124,7 +124,7 @@ public class Call extends Thread {
 						makeCall();
 					}
 				}
-			}, new Long(ScotlandYard.properties.getProperty("retryTime")));
+			}, new Long(EPursuit.properties.getProperty("retryTime")));
 		}
 
 	}
@@ -156,7 +156,7 @@ public class Call extends Thread {
 										// no "noAnswer()" called here because a onNoAnswer event will come in anyway
 									}
 								}
-							}, new Long(ScotlandYard.properties.getProperty("callTime")));
+							}, new Long(EPursuit.properties.getProperty("callTime")));
 						}
 					}
 				});
@@ -203,11 +203,11 @@ public class Call extends Thread {
 		// set up the Call
 		this.originateAction = new OriginateAction();
 		this.originateAction.setChannel(destination); // SIP/1083484/01703846797
-		this.originateAction.setContext(ScotlandYard.properties.getProperty("context"));
+		this.originateAction.setContext(EPursuit.properties.getProperty("context"));
 		this.originateAction.setExten(agi.getExtension());
 		this.originateAction.setPriority(new Integer(1));
 		// TODO: Which timeout to use? Occurs sometimes when the phone is down or never receives an event (for some reason)
-		this.originateAction.setTimeout(new Long(new Integer(ScotlandYard.properties.getProperty("callTime")) + 20000));
+		this.originateAction.setTimeout(new Long(new Integer(EPursuit.properties.getProperty("callTime")) + 20000));
 		this.originateAction.setAsync(true);
 		
 		// make initial call
