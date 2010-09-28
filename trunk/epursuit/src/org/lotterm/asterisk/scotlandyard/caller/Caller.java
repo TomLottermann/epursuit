@@ -64,8 +64,7 @@ public class Caller {
 		this.agentAgi = agentAgi;
 
 		// Start the ManagerFactory and connect up a manager
-		// TODO: DEV: change 192.168.2.33 to localhost
-		ManagerConnectionFactory factory = new ManagerConnectionFactory("192.168.2.33", ScotlandYard.properties.getProperty("managerUser"), ScotlandYard.properties.getProperty("managerPassword"));
+		ManagerConnectionFactory factory = new ManagerConnectionFactory(ScotlandYard.properties.getProperty("asteriskHost"), ScotlandYard.properties.getProperty("managerUser"), ScotlandYard.properties.getProperty("managerPassword"));
 
 		this.managerConnection = factory.createManagerConnection();
 

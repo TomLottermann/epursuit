@@ -88,8 +88,12 @@ public class ScotlandYard {
 	 * @throws IllegalStateException
 	 */
 	public static void main(String[] args) throws IllegalStateException, IOException {
-		new ScotlandYard("/home/thomas/Desktop/scotlandyard.properties");
-
+		if(args.length==1) {
+			new ScotlandYard(args[0]);			
+		} else {
+			System.out.println("Wrong syntax!");
+			System.out.println("Please add one parameter which leads to the config file!");
+		}
 	}
 
 }
