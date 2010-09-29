@@ -19,5 +19,5 @@ public interface CallListener {
 	 * @param destination
 	 * @param extension
 	 */
-	public void callFinished(String destination, Agi extension, String... record);
+	public void callFinished(String destination, Agi extension, String channel);
 }

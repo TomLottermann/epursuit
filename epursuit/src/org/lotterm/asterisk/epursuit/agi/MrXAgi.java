@@ -2,6 +2,7 @@ package org.lotterm.asterisk.epursuit.agi;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.asteriskjava.fastagi.AgiChannel;
@@ -22,6 +23,9 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 
 	// List of listeners
 	private final ArrayList<AgiCallListener> listeners = new ArrayList<AgiCallListener>();
+	
+	// Channel to recordname relation
+	private HashMap<String, String> recordMap=new HashMap<String, String>();
 
 	/*
 	 * (non-Javadoc)
@@ -34,6 +38,15 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 	public void addListener(AgiCallListener listener) {
 		if (listener != null)
 			this.listeners.add(listener);
+	}
+	
+	/**
+	 * Returns the name of the record by channel name
+	 * @param channel
+	 * @return
+	 */
+	public String getRecordByChannel(String channel) {
+		return this.recordMap.get(channel);
 	}
 
 	/*
@@ -67,9 +80,11 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 			// ..record the file.
 			this.recordFile(fileName, "gsm", "brauchkeinschwein", new Integer(EPursuit.properties.getProperty("maxTalkTime")), 0, new Boolean(EPursuit.properties.getProperty("beep")),
 					new Integer(EPursuit.properties.getProperty("maxWaitTime")));
+			
+			this.recordMap.put(channel.getName(), String.valueOf(name));
 			// Call all listeners
 			for (AgiCallListener listener : listeners) {
-				listener.callFinished(channel.getName(), String.valueOf(name));
+				listener.callFinished(channel.getName());
 			}
 		} catch (AgiHangupException e) {
 			for (AgiCallListener listener : listeners) {
