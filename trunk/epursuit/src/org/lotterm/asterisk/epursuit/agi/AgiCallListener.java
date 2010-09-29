@@ -18,7 +18,7 @@ public interface AgiCallListener {
 	 * 
 	 * @param recordId
 	 */
-	public void callFinished(String channel, String... record);
+	public void callFinished(String channel);
 	
 	/**
 	 * Called when user hangs up before recording
