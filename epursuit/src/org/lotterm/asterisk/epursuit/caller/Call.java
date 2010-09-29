@@ -42,6 +42,8 @@ public class Call extends Thread {
 	private ArrayList<CallListener> listeners = new ArrayList<CallListener>();
 
 	private CallState state=CallState.NOSTART;
+	
+	private boolean hangup=false;
 
 	/**
 	 * Constructs the object and starts the thread
@@ -70,25 +72,25 @@ public class Call extends Thread {
 
 			@Override
 			public void callNotSuccessful(String channel) {
-				if (channel.equals(currentChannel)) {
-					success = false;
-					noAnswer();
+				if (channel.equals(Call.this.currentChannel)) {
+					Call.this.success = false;
+					Call.this.noAnswer();
 
 				}
 			}
 
 			@Override
 			public void callFinished(String channel) {
-				if (channel.equals(currentChannel)) {
+				if (channel.equals(Call.this.currentChannel)) {
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					for (CallListener listener : listeners) {
-						listener.callFinished(destination, agi, currentChannel);
+					for (CallListener listener : Call.this.listeners) {
+						listener.callFinished(destination, agi, Call.this.currentChannel);
 					}
-					state=CallState.SUCCESSFUL;
+					Call.this.state=CallState.SUCCESSFUL;
 				}
 			}
 		});
@@ -96,16 +98,24 @@ public class Call extends Thread {
 	
 	@Override
 	public void start() {
-		state=CallState.BUSY;
+		this.hangup=false;
+		this.state=CallState.BUSY;
 		super.start();
 	}
 	
 	public CallState getCallState() {
-		return state;
+		return this.state;
 	}
 	
 	public String getDestination() {
-		return destination;
+		return this.destination;
+	}
+	
+	public void hangup() {
+		try {
+			this.asteriskServer.getChannelByName(this.currentChannel).hangup();
+			this.hangup=true;
+		} catch(Exception e) {}
 	}
 
 	/**
@@ -131,23 +141,23 @@ public class Call extends Thread {
 		this.timeoutTimer = new Timer();
 
 		// Plus one failed try
-		tries++;
+		this.tries++;
 
 		// too many tries => tell listeners
-		if (tries >= new Integer(EPursuit.properties.getProperty("maxTries"))) {
-			state=CallState.TIMEOUT;
-			for (CallListener listener : listeners) {
-				listener.callNotAnswered(destination, agi);
+		if (this.tries >= new Integer(EPursuit.properties.getProperty("maxTries"))) {
+			this.state=CallState.TIMEOUT;
+			for (CallListener listener : this.listeners) {
+				listener.callNotAnswered(this.destination, this.agi);
 			}
 		} else {
-			state=CallState.RETRY;
+			this.state=CallState.RETRY;
 			// schedule retry
 			this.timeoutTimer.schedule(new TimerTask() {
 
 				@Override
 				public void run() {
-					if (!success) {
-						makeCall();
+					if (!Call.this.success) {
+						Call.this.makeCall();
 					}
 				}
 			}, new Long(EPursuit.properties.getProperty("retryTime")));
@@ -169,8 +179,8 @@ public class Call extends Thread {
 
 			@Override
 			public void run() {
-				if (!success) {
-					makeCall();
+				if (!Call.this.success) {
+					Call.this.makeCall();
 				}
 			}
 		}, new Long(EPursuit.properties.getProperty("callTime")) * 2);
@@ -182,12 +192,15 @@ public class Call extends Thread {
 	 */
 	private void makeCall() {
 		// send the originate action (Call)
-		this.asteriskServer.originateAsync(originateAction, new OriginateCallbackAdapter() {
+		this.asteriskServer.originateAsync(this.originateAction, new OriginateCallbackAdapter() {
 			@Override
 			public void onDialing(final AsteriskChannel asteriskChannel) {
-				log.log(Level.INFO, "Dialing: " + asteriskChannel.getName() + " " + destination);
-				state=CallState.DIALING;
-				currentChannel = asteriskChannel.getName();
+				Call.this.log.log(Level.INFO, "Dialing: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.state=CallState.DIALING;
+				Call.this.currentChannel = asteriskChannel.getName();
+				// Make sure when there was a hangup event that it is realy hung up.
+				if(Call.this.hangup)
+					Call.this.hangup();
 				// Listen for cool stuff like "ringing"
 				asteriskChannel.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -196,13 +209,13 @@ public class Call extends Thread {
 						// is the phone ringing?
 						if (evt.getPropertyName().equals("state") && evt.getNewValue().toString().equals("RINGING")) {
 							// Schedule hangup timeout
-							timeoutTimer.schedule(new TimerTask() {
+							Call.this.timeoutTimer.schedule(new TimerTask() {
 
 								@Override
 								public void run() {
-									if (!success) {
-										System.out.println("RINGING: " + asteriskChannel.getName() + " " + destination);
-										asteriskServer.getChannelByName(currentChannel).hangup();
+									if (!Call.this.success) {
+										System.out.println("RINGING: " + asteriskChannel.getName() + " " + Call.this.destination);
+										Call.this.asteriskServer.getChannelByName(Call.this.currentChannel).hangup();
 										// no "noAnswer()" called here because a
 										// onNoAnswer event will come in anyway
 									}
@@ -215,39 +228,39 @@ public class Call extends Thread {
 
 			@Override
 			public void onSuccess(AsteriskChannel asteriskChannel) {
-				state=CallState.RUNNING;
-				success = true;
-				log.log(Level.INFO, "Connection successful: " + asteriskChannel.getName() + " " + destination);
+				Call.this.state=CallState.RUNNING;
+				Call.this.success = true;
+				Call.this.log.log(Level.INFO, "Connection successful: " + asteriskChannel.getName() + " " + Call.this.destination);
 
 			}
 
 			@Override
 			public void onNoAnswer(AsteriskChannel asteriskChannel) {
-				log.log(Level.INFO, "Channel not answered: " + currentChannel + " " + destination);
+				Call.this.log.log(Level.INFO, "Channel not answered: " + Call.this.currentChannel + " " + Call.this.destination);
 				if (asteriskChannel.getHangupCause().toString().equals("CALL_REJECTED")) {
 					System.out.println("CALL was rejected");
-					callRejected();
+					Call.this.callRejected();
 				} else {
-					noAnswer();
+					Call.this.noAnswer();
 				}
 			}
 
 			@Override
 			public void onBusy(AsteriskChannel asteriskChannel) {
-				noAnswer();
+				Call.this.noAnswer();
 
-				log.log(Level.INFO, "Busy: " + asteriskChannel.getName() + " " + destination);
+				Call.this.log.log(Level.INFO, "Busy: " + asteriskChannel.getName() + " " + Call.this.destination);
 			}
 
 			@Override
 			public void onFailure(LiveException cause) {
-				noAnswer();
+				Call.this.noAnswer();
 
 				if (cause.getClass().getCanonicalName().equals("org.asteriskjava.live.NoSuchChannelException")) {
 					// Called when the channel is busy... dunno why
-					log.log(Level.INFO, "Channel perhabs busy. " + destination);
+					Call.this.log.log(Level.INFO, "Channel perhabs busy. " + Call.this.destination);
 				} else {
-					log.log(Level.WARNING, "Received unknown error.\n" + cause + " " + destination);
+					Call.this.log.log(Level.WARNING, "Received unknown error.\n" + cause + " " + Call.this.destination);
 				}
 
 			}
@@ -255,13 +268,14 @@ public class Call extends Thread {
 
 	}
 
+	@Override
 	public void run() {
 
 		// set up the Call
 		this.originateAction = new OriginateAction();
-		this.originateAction.setChannel(destination); // SIP/1083484/01703846797
+		this.originateAction.setChannel(this.destination); // SIP/1083484/01703846797
 		this.originateAction.setContext(EPursuit.properties.getProperty("context"));
-		this.originateAction.setExten(agi.getExtension());
+		this.originateAction.setExten(this.agi.getExtension());
 		this.originateAction.setPriority(new Integer(1));
 		// TODO: Which timeout to use? Occurs sometimes when the phone is down
 		// or never receives an event (for some reason)

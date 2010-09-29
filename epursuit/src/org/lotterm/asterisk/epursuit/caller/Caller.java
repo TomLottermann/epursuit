@@ -73,14 +73,14 @@ public class Caller {
 		try {
 			this.managerConnection.login();
 		} catch (IllegalStateException e) {
-			log.log(Level.WARNING, "Problem occurred while connecting to manager interface: " + e.getMessage());
+			this.log.log(Level.WARNING, "Problem occurred while connecting to manager interface: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (AuthenticationFailedException e) {
-			log.log(Level.SEVERE, "Authentication with manager failed.");
+			this.log.log(Level.SEVERE, "Authentication with manager failed.");
 			e.printStackTrace();
 		} catch (TimeoutException e) {
-			log.log(Level.SEVERE, "Timeout during manager authentication.");
+			this.log.log(Level.SEVERE, "Timeout during manager authentication.");
 			e.printStackTrace();
 		}
 
@@ -104,7 +104,7 @@ public class Caller {
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, "mrxList could not be found at \"" + EPursuit.properties.getProperty("mrxList") + "\"");
+			this.log.log(Level.SEVERE, "mrxList could not be found at \"" + EPursuit.properties.getProperty("mrxList") + "\"");
 			e.printStackTrace();
 		}
 	}
@@ -125,7 +125,7 @@ public class Caller {
 			}
 
 		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, "agentList could not be found at \"" + EPursuit.properties.getProperty("agentList") + "\"");
+			this.log.log(Level.SEVERE, "agentList could not be found at \"" + EPursuit.properties.getProperty("agentList") + "\"");
 			e.printStackTrace();
 		}
 	}
@@ -134,14 +134,14 @@ public class Caller {
 	 * Are all MrX calls finished? => set records and call agents
 	 */
 	private void testForMrXFinished() {
-		if (mrxCalls.isCallCycleFinished()) {
-			log.log(Level.INFO, "Done with Mr X");
-			agentAgi.setRecordList(recordList);
-			log.log(Level.INFO, "Starting with agents");
+		if (this.mrxCalls.isCallCycleFinished()) {
+			this.log.log(Level.INFO, "Done with Mr X");
+			this.agentAgi.setRecordList(this.recordList);
+			this.log.log(Level.INFO, "Starting with agents");
 			//TODO: ???????
-			callAgents();
+			this.callAgents();
 		} else {
-			makeNextMrXCall();
+			this.makeNextMrXCall();
 		}
 	}
 
@@ -149,12 +149,12 @@ public class Caller {
 	 * Are all Agent calls finished?
 	 */
 	private void testForAgentsFinished() {
-		if (agentCalls.isCallCycleFinished()) {
-			log.log(Level.INFO, "Done with Agents");
+		if (this.agentCalls.isCallCycleFinished()) {
+			this.log.log(Level.INFO, "Done with Agents");
 
 			// managerConnection.logoff();
 		} else {
-			makeNextAgentCall();
+			this.makeNextAgentCall();
 		}
 	}
 
@@ -162,47 +162,47 @@ public class Caller {
 	 * start calling MrX
 	 */
 	public void callMrX() {
-		mrxCalls=new Callcycle();
-		for (String mrxDestination : mrxList) {
-			log.log(Level.INFO, "Calling: " + mrxDestination);
+		this.mrxCalls=new Callcycle();
+		for (String mrxDestination : this.mrxList) {
+			this.log.log(Level.INFO, "Calling: " + mrxDestination);
 			Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
 			call.addListener(new CallListener() {
 
 				@Override
 				public void callNotAnswered(String destination, Agi extension) {
 					// give up calling that guy!
-					log.log(Level.WARNING, "Giving up to call " + destination + ". The number is perhabs wrong.");
+					Caller.this.log.log(Level.WARNING, "Giving up to call " + destination + ". The number is perhabs wrong.");
 
-					testForMrXFinished();
+					Caller.this.testForMrXFinished();
 				}
 
 				@Override
 				public void callFinished(String destination, Agi extension, String channel) {
 
-					String record = mrxAgi.getRecordByChannel(channel);
+					String record = Caller.this.mrxAgi.getRecordByChannel(channel);
 
 					if (record != null) {
-						recordList.add(record);
+						Caller.this.recordList.add(record);
 					} else {
 						System.out.println("RECORD NULL: " + destination + " " + channel);
 					}
 
-					testForMrXFinished();
+					Caller.this.testForMrXFinished();
 				}
 
 			});
-			mrxCalls.add(call);
+			this.mrxCalls.add(call);
 			// TODO: folgendes ersetzen!
 			//call.start();
 		}
 		for(int i=0; i<new Integer(EPursuit.properties.getProperty("maxCalls")); i++) {
-			makeNextMrXCall();		
+			this.makeNextMrXCall();		
 		}
 	}
 
 	private void makeNextMrXCall() {
-		if(mrxCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
-			Call unusedCall = mrxCalls.getUnusedCall();
+		if(this.mrxCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
+			Call unusedCall = this.mrxCalls.getUnusedCall();
 			// TODO: catch null!!!!
 			unusedCall.start();
 		}
@@ -212,36 +212,36 @@ public class Caller {
 	 * Call all agents
 	 */
 	public void callAgents() {
-		agentCalls=new Callcycle();
+		this.agentCalls=new Callcycle();
 		try {
 
-			for (String agentDestination : agentList) {
-				log.log(Level.INFO, "Calling: " + agentDestination);
+			for (String agentDestination : this.agentList) {
+				this.log.log(Level.INFO, "Calling: " + agentDestination);
 				Call call = new Call(agentDestination, this.agentAgi, this.managerConnection, this.asteriskServer);
 				call.addListener(new CallListener() {
 
 					@Override
 					public void callNotAnswered(String destination, Agi extension) {
 						// give up calling that guy!
-						log.log(Level.WARNING, "Giving up to call " + destination);
+						Caller.this.log.log(Level.WARNING, "Giving up to call " + destination);
 
-						testForAgentsFinished();
+						Caller.this.testForAgentsFinished();
 					}
 
 					@Override
 					public void callFinished(String destination, Agi extension, String channel) {
 						// Call successful => one call less to bother about.
 
-						testForAgentsFinished();
+						Caller.this.testForAgentsFinished();
 					}
 				});
-				agentCalls.add(call);
+				this.agentCalls.add(call);
 				// TODO: folgendes ersetzen!
 				//call.start();
 				
 			}
 			for(int i=0; i<new Integer(EPursuit.properties.getProperty("maxCalls")); i++)
-				makeNextAgentCall();
+				this.makeNextAgentCall();
 
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
@@ -251,8 +251,8 @@ public class Caller {
 	}
 	
 	private void makeNextAgentCall() {
-		if(agentCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
-			Call unusedCall = agentCalls.getUnusedCall();
+		if(this.agentCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
+			Call unusedCall = this.agentCalls.getUnusedCall();
 			// TODO: catch null!!!!
 			unusedCall.start();
 		}

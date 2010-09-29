@@ -5,7 +5,24 @@ import java.util.ArrayList;
 /**
  * @author thomas
  */
-public class Callcycle extends ArrayList<Call> {
+public class Callcycle {
+	
+	private ArrayList<Call> list=new ArrayList<Call>();
+	
+	/**
+	 * Add a Call to the cycle
+	 * @param call
+	 */
+	public void add(Call call) {
+		this.list.add(call);
+	}
+	
+	/**
+	 * Clear the cycle
+	 */
+	public void clear() {
+		this.list.clear();
+	}
 	
 	/**
 	 * Returns the Call associated to a destination
@@ -14,7 +31,7 @@ public class Callcycle extends ArrayList<Call> {
 	 * @return
 	 */
 	public Call getCallByDestination(String destination) {
-		for (Call call : this) {
+		for (Call call : this.list) {
 			if(call.getDestination().equals(destination)) {
 				return call;
 			}
@@ -28,7 +45,7 @@ public class Callcycle extends ArrayList<Call> {
 	 * @return
 	 */
 	public Call getUnusedCall() {
-		for (Call call : this) {
+		for (Call call : this.list) {
 			if(call.getCallState()==CallState.NOSTART) {
 				return call;
 			}
@@ -43,7 +60,7 @@ public class Callcycle extends ArrayList<Call> {
 	 */
 	public int countRunningCalls() {
 		int count=0;
-		for (Call call : this) {
+		for (Call call : this.list) {
 			if(call.getCallState()!=CallState.SUCCESSFUL&&call.getCallState()!=CallState.NOSTART&&call.getCallState()!=CallState.TIMEOUT) {
 				count++;
 			}
@@ -58,7 +75,7 @@ public class Callcycle extends ArrayList<Call> {
 	 */
 	public boolean isCallCycleFinished() {
 		int count=0;
-		for (Call call : this) {
+		for (Call call : this.list) {
 			if(call.getCallState()!=CallState.SUCCESSFUL&&call.getCallState()!=CallState.TIMEOUT) {
 				count++;
 			}
