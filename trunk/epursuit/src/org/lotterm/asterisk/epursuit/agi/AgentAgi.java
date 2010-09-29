@@ -53,16 +53,16 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 			this.answer();
 
 			// Tell everyone that call started
-			for (AgiCallListener listener : listeners) {
+			for (AgiCallListener listener : this.listeners) {
 				listener.callStarted(channel.getName());
 			}
 
-			if (recordList != null && recordList.size() > 0) {
+			if (this.recordList != null && this.recordList.size() > 0) {
 				// ...play the introduction...
 				this.streamFile(EPursuit.properties.getProperty("agentsIntro"));
 
 				// ...and play the recording
-				for (String recording : recordList) {
+				for (String recording : this.recordList) {
 					this.streamFile("beep");
 					this.streamFile(EPursuit.properties.getProperty("recordPath") + recording);
 				}
@@ -78,7 +78,7 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 		}
 
 		// Tell everyone that call finished
-		for (AgiCallListener listener : listeners) {
+		for (AgiCallListener listener : this.listeners) {
 			listener.callFinished(channel.getName());
 		}
 	}

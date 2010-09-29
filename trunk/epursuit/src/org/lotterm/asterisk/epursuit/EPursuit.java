@@ -64,7 +64,7 @@ public class EPursuit {
 
 		mapping.setMappings(mappingMap);
 
-		new ThreadedAgiServer(mapping, new Integer(properties.getProperty("agiPort")));
+		new ThreadedAgiServer(mapping, new Integer(EPursuit.properties.getProperty("agiPort")));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class EPursuit {
 		BufferedInputStream stream = new BufferedInputStream(new FileInputStream(location));
 
 		// load it into properties
-		properties.load(stream);
+		EPursuit.properties.load(stream);
 		stream.close();
 	}
 

@@ -70,7 +70,7 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 			} while (new File(fileName).exists());
 
 			// Call all listeners
-			for (AgiCallListener listener : listeners) {
+			for (AgiCallListener listener : this.listeners) {
 				listener.callStarted(String.valueOf(name));
 			}
 
@@ -83,11 +83,11 @@ public class MrXAgi extends BaseAgiScript implements Agi {
 			
 			this.recordMap.put(channel.getName(), String.valueOf(name));
 			// Call all listeners
-			for (AgiCallListener listener : listeners) {
+			for (AgiCallListener listener : this.listeners) {
 				listener.callFinished(channel.getName());
 			}
 		} catch (AgiHangupException e) {
-			for (AgiCallListener listener : listeners) {
+			for (AgiCallListener listener : this.listeners) {
 				listener.callNotSuccessful(channel.getName());
 			}
 		}
