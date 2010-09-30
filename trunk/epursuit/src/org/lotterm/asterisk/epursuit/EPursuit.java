@@ -13,6 +13,7 @@ import org.lotterm.asterisk.epursuit.agi.AgentAgi;
 import org.lotterm.asterisk.epursuit.agi.MrXAgi;
 import org.lotterm.asterisk.epursuit.agi.ThreadedAgiServer;
 import org.lotterm.asterisk.epursuit.caller.Caller;
+import org.lotterm.asterisk.epursuit.ui.Shell;
 
 /**
  * @author thomas
@@ -20,6 +21,9 @@ import org.lotterm.asterisk.epursuit.caller.Caller;
 public class EPursuit {
 
 	public static Properties properties = new Properties();
+	
+	private Shell shell;
+	
 	/**
 	 * Loads properties, starts AGI, sets Listeners...
 	 * 
@@ -38,8 +42,11 @@ public class EPursuit {
 			// start AGI-server
 			this.startServer(agentAgi, mrxAgi);
 			
-			new Caller(agentAgi, mrxAgi);
-
+			Caller caller = new Caller(agentAgi, mrxAgi);
+			
+			this.shell=new Shell(caller);
+			this.shell.start();
+			
 		} catch (IOException e) {
 			System.out.println("Unable to read properties file. DIED");
 			e.printStackTrace();
@@ -95,5 +102,5 @@ public class EPursuit {
 			System.out.println("Please add one parameter which leads to the config file!");
 		}
 	}
-
+	
 }
