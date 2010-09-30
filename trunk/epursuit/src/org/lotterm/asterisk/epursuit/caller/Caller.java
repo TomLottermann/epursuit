@@ -43,6 +43,8 @@ public class Caller {
 
 	private Callcycle mrxCalls;
 	private Callcycle agentCalls;
+	
+	private ArrayList<CallerListener> listeners=new ArrayList<CallerListener>();
 
 	/**
 	 * Connect to Manager interface of local Asterisk, AsteriskServer and start
@@ -86,6 +88,10 @@ public class Caller {
 
 		// Start calling MrX
 		this.callMrX();
+	}
+	
+	public void addCallerListener(CallerListener listener) {
+		this.listeners.add(listener);
 	}
 
 	/**
@@ -136,10 +142,12 @@ public class Caller {
 	private void testForMrXFinished() {
 		if (this.mrxCalls.isCallCycleFinished()) {
 			this.log.log(Level.INFO, "Done with Mr X");
+			
 			this.agentAgi.setRecordList(this.recordList);
-			this.log.log(Level.INFO, "Starting with agents");
-			//TODO: ???????
-			this.callAgents();
+			
+			for (CallerListener listener : this.listeners) {
+				listener.mrxCallsFinished();
+			}
 		} else {
 			this.makeNextMrXCall();
 		}
@@ -151,7 +159,10 @@ public class Caller {
 	private void testForAgentsFinished() {
 		if (this.agentCalls.isCallCycleFinished()) {
 			this.log.log(Level.INFO, "Done with Agents");
-
+			for (CallerListener listener : this.listeners) {
+				listener.agentCallsFinished();
+			}
+			
 			// managerConnection.logoff();
 		} else {
 			this.makeNextAgentCall();
@@ -162,7 +173,7 @@ public class Caller {
 	 * start calling MrX
 	 */
 	public void callMrX() {
-		this.mrxCalls=new Callcycle();
+		this.mrxCalls = new Callcycle();
 		for (String mrxDestination : this.mrxList) {
 			this.log.log(Level.INFO, "Calling: " + mrxDestination);
 			Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
@@ -193,15 +204,15 @@ public class Caller {
 			});
 			this.mrxCalls.add(call);
 			// TODO: folgendes ersetzen!
-			//call.start();
+			// call.start();
 		}
-		for(int i=0; i<new Integer(EPursuit.properties.getProperty("maxCalls")); i++) {
-			this.makeNextMrXCall();		
+		for (int i = 0; i < new Integer(EPursuit.properties.getProperty("maxCalls")); i++) {
+			this.makeNextMrXCall();
 		}
 	}
 
 	private void makeNextMrXCall() {
-		if(this.mrxCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
+		if (this.mrxCalls.countRunningCalls() <= new Integer(EPursuit.properties.getProperty("maxCalls"))) {
 			Call unusedCall = this.mrxCalls.getUnusedCall();
 			// TODO: catch null!!!!
 			unusedCall.start();
@@ -212,7 +223,7 @@ public class Caller {
 	 * Call all agents
 	 */
 	public void callAgents() {
-		this.agentCalls=new Callcycle();
+		this.agentCalls = new Callcycle();
 		try {
 
 			for (String agentDestination : this.agentList) {
@@ -237,10 +248,10 @@ public class Caller {
 				});
 				this.agentCalls.add(call);
 				// TODO: folgendes ersetzen!
-				//call.start();
-				
+				// call.start();
+
 			}
-			for(int i=0; i<new Integer(EPursuit.properties.getProperty("maxCalls")); i++)
+			for (int i = 0; i < new Integer(EPursuit.properties.getProperty("maxCalls")); i++)
 				this.makeNextAgentCall();
 
 		} catch (IllegalStateException e) {
@@ -249,13 +260,42 @@ public class Caller {
 		}
 
 	}
-	
+
 	private void makeNextAgentCall() {
-		if(this.agentCalls.countRunningCalls()<=new Integer(EPursuit.properties.getProperty("maxCalls"))) {
+		if (this.agentCalls.countRunningCalls() <= new Integer(EPursuit.properties.getProperty("maxCalls"))) {
 			Call unusedCall = this.agentCalls.getUnusedCall();
 			// TODO: catch null!!!!
 			unusedCall.start();
 		}
+	}
+
+	/**
+	 * make test call
+	 */
+	public void testCall() {
+		this.log.log(Level.INFO, "Test Call: " + EPursuit.properties.getProperty("testCall"));
+		Call call = new Call(EPursuit.properties.getProperty("testCall"), this.agentAgi, this.managerConnection, this.asteriskServer);
+		call.addListener(new CallListener() {
+
+			@Override
+			public void callNotAnswered(String destination, Agi extension) {
+				// give up calling that guy!
+				Caller.this.log.log(Level.WARNING, "Giving up to call " + destination + ". The number is perhabs wrong.");
+				for (CallerListener listener : Caller.this.listeners) {
+					listener.testCallFinished();
+				}
+			}
+
+			@Override
+			public void callFinished(String destination, Agi extension, String channel) {
+				Caller.this.log.log(Level.INFO, "Testcall finished");
+				for (CallerListener listener : Caller.this.listeners) {
+					listener.testCallFinished();
+				}
+			}
+
+		});
+		call.start();
 	}
 
 }
