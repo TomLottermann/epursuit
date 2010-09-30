@@ -7,5 +7,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Scotland Yard/lib/asterisk-java-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jline-0_9_5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

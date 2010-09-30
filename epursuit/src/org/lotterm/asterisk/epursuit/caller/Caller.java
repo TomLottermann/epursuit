@@ -54,7 +54,7 @@ public class Caller {
 	 * @param mrxAgi
 	 */
 	public Caller(AgentAgi agentAgi, MrXAgi mrxAgi) {
-
+		
 		// Read in all MrX
 		this.readMrX();
 
@@ -87,7 +87,7 @@ public class Caller {
 		}
 
 		// Start calling MrX
-		this.callMrX();
+		//this.callMrX();
 	}
 	
 	public void addCallerListener(CallerListener listener) {
@@ -141,7 +141,7 @@ public class Caller {
 	 */
 	private void testForMrXFinished() {
 		if (this.mrxCalls.isCallCycleFinished()) {
-			this.log.log(Level.INFO, "Done with Mr X");
+			this.log.log(Level.FINE, "Done with Mr X");
 			
 			this.agentAgi.setRecordList(this.recordList);
 			
@@ -158,7 +158,7 @@ public class Caller {
 	 */
 	private void testForAgentsFinished() {
 		if (this.agentCalls.isCallCycleFinished()) {
-			this.log.log(Level.INFO, "Done with Agents");
+			this.log.log(Level.FINE, "Done with Agents");
 			for (CallerListener listener : this.listeners) {
 				listener.agentCallsFinished();
 			}
@@ -175,7 +175,7 @@ public class Caller {
 	public void callMrX() {
 		this.mrxCalls = new Callcycle();
 		for (String mrxDestination : this.mrxList) {
-			this.log.log(Level.INFO, "Calling: " + mrxDestination);
+			this.log.log(Level.FINER, "Calling: " + mrxDestination);
 			Call call = new Call(mrxDestination, this.mrxAgi, this.managerConnection, this.asteriskServer);
 			call.addListener(new CallListener() {
 
@@ -203,8 +203,6 @@ public class Caller {
 
 			});
 			this.mrxCalls.add(call);
-			// TODO: folgendes ersetzen!
-			// call.start();
 		}
 		for (int i = 0; i < new Integer(EPursuit.properties.getProperty("maxCalls")); i++) {
 			this.makeNextMrXCall();
@@ -227,7 +225,7 @@ public class Caller {
 		try {
 
 			for (String agentDestination : this.agentList) {
-				this.log.log(Level.INFO, "Calling: " + agentDestination);
+				this.log.log(Level.FINER, "Calling: " + agentDestination);
 				Call call = new Call(agentDestination, this.agentAgi, this.managerConnection, this.asteriskServer);
 				call.addListener(new CallListener() {
 
@@ -247,8 +245,6 @@ public class Caller {
 					}
 				});
 				this.agentCalls.add(call);
-				// TODO: folgendes ersetzen!
-				// call.start();
 
 			}
 			for (int i = 0; i < new Integer(EPursuit.properties.getProperty("maxCalls")); i++)
@@ -273,7 +269,7 @@ public class Caller {
 	 * make test call
 	 */
 	public void testCall() {
-		this.log.log(Level.INFO, "Test Call: " + EPursuit.properties.getProperty("testCall"));
+		this.log.log(Level.FINER, "Test Call: " + EPursuit.properties.getProperty("testCall"));
 		Call call = new Call(EPursuit.properties.getProperty("testCall"), this.agentAgi, this.managerConnection, this.asteriskServer);
 		call.addListener(new CallListener() {
 
@@ -288,7 +284,7 @@ public class Caller {
 
 			@Override
 			public void callFinished(String destination, Agi extension, String channel) {
-				Caller.this.log.log(Level.INFO, "Testcall finished");
+				Caller.this.log.log(Level.FINE, "Testcall finished");
 				for (CallerListener listener : Caller.this.listeners) {
 					listener.testCallFinished();
 				}

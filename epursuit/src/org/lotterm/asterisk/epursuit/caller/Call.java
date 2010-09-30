@@ -83,14 +83,15 @@ public class Call extends Thread {
 			public void callFinished(String channel) {
 				if (channel.equals(Call.this.currentChannel)) {
 					try {
+						//TODO: FIX THIS!!!
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
+					Call.this.state=CallState.SUCCESSFUL;
 					for (CallListener listener : Call.this.listeners) {
 						listener.callFinished(destination, agi, Call.this.currentChannel);
 					}
-					Call.this.state=CallState.SUCCESSFUL;
 				}
 			}
 		});
@@ -195,7 +196,7 @@ public class Call extends Thread {
 		this.asteriskServer.originateAsync(this.originateAction, new OriginateCallbackAdapter() {
 			@Override
 			public void onDialing(final AsteriskChannel asteriskChannel) {
-				Call.this.log.log(Level.INFO, "Dialing: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.FINER, "Dialing: " + asteriskChannel.getName() + " " + Call.this.destination);
 				Call.this.state=CallState.DIALING;
 				Call.this.currentChannel = asteriskChannel.getName();
 				// Make sure when there was a hangup event that it is realy hung up.
@@ -230,13 +231,13 @@ public class Call extends Thread {
 			public void onSuccess(AsteriskChannel asteriskChannel) {
 				Call.this.state=CallState.RUNNING;
 				Call.this.success = true;
-				Call.this.log.log(Level.INFO, "Connection successful: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.FINER, "Connection successful: " + asteriskChannel.getName() + " " + Call.this.destination);
 
 			}
 
 			@Override
 			public void onNoAnswer(AsteriskChannel asteriskChannel) {
-				Call.this.log.log(Level.INFO, "Channel not answered: " + Call.this.currentChannel + " " + Call.this.destination);
+				Call.this.log.log(Level.FINER, "Channel not answered: " + Call.this.currentChannel + " " + Call.this.destination);
 				if (asteriskChannel.getHangupCause().toString().equals("CALL_REJECTED")) {
 					System.out.println("CALL was rejected");
 					Call.this.callRejected();
@@ -249,7 +250,7 @@ public class Call extends Thread {
 			public void onBusy(AsteriskChannel asteriskChannel) {
 				Call.this.noAnswer();
 
-				Call.this.log.log(Level.INFO, "Busy: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.FINER, "Busy: " + asteriskChannel.getName() + " " + Call.this.destination);
 			}
 
 			@Override
@@ -258,7 +259,7 @@ public class Call extends Thread {
 
 				if (cause.getClass().getCanonicalName().equals("org.asteriskjava.live.NoSuchChannelException")) {
 					// Called when the channel is busy... dunno why
-					Call.this.log.log(Level.INFO, "Channel perhabs busy. " + Call.this.destination);
+					Call.this.log.log(Level.FINER, "Channel perhabs busy. " + Call.this.destination);
 				} else {
 					Call.this.log.log(Level.WARNING, "Received unknown error.\n" + cause + " " + Call.this.destination);
 				}
