@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -167,6 +168,7 @@ public class Call extends Thread {
 	}
 
 	private void callRejected() {
+		System.out.println("CALL REJECTED!!!!!!!");
 		try {
 			this.timeoutTimer.cancel();
 		} catch (IllegalStateException e) {
@@ -196,7 +198,7 @@ public class Call extends Thread {
 		this.asteriskServer.originateAsync(this.originateAction, new OriginateCallbackAdapter() {
 			@Override
 			public void onDialing(final AsteriskChannel asteriskChannel) {
-				Call.this.log.log(Level.FINER, "Dialing: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.INFO, "Dialing: " + asteriskChannel.getName() + " " + Call.this.destination);
 				Call.this.state=CallState.DIALING;
 				Call.this.currentChannel = asteriskChannel.getName();
 				// Make sure when there was a hangup event that it is realy hung up.
@@ -209,13 +211,13 @@ public class Call extends Thread {
 					public void propertyChange(PropertyChangeEvent evt) {
 						// is the phone ringing?
 						if (evt.getPropertyName().equals("state") && evt.getNewValue().toString().equals("RINGING")) {
+							log.log(Level.INFO, "Ringing: " + asteriskChannel.getName() + " " + Call.this.destination);
 							// Schedule hangup timeout
 							Call.this.timeoutTimer.schedule(new TimerTask() {
 
 								@Override
 								public void run() {
 									if (!Call.this.success) {
-										System.out.println("RINGING: " + asteriskChannel.getName() + " " + Call.this.destination);
 										Call.this.asteriskServer.getChannelByName(Call.this.currentChannel).hangup();
 										// no "noAnswer()" called here because a
 										// onNoAnswer event will come in anyway
@@ -231,16 +233,15 @@ public class Call extends Thread {
 			public void onSuccess(AsteriskChannel asteriskChannel) {
 				Call.this.state=CallState.RUNNING;
 				Call.this.success = true;
-				Call.this.log.log(Level.FINER, "Connection successful: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.INFO, "Connection successful: " + asteriskChannel.getName() + " " + Call.this.destination);
 
 			}
 
 			@Override
 			public void onNoAnswer(AsteriskChannel asteriskChannel) {
-				Call.this.log.log(Level.FINER, "Channel not answered: " + Call.this.currentChannel + " " + Call.this.destination);
+				Call.this.log.log(Level.INFO, "Channel not answered: " + Call.this.currentChannel + " " + Call.this.destination);
 				if (asteriskChannel.getHangupCause().toString().equals("CALL_REJECTED")) {
-					System.out.println("CALL was rejected");
-					Call.this.callRejected();
+					Call.this.noAnswer();
 				} else {
 					Call.this.noAnswer();
 				}
@@ -250,7 +251,7 @@ public class Call extends Thread {
 			public void onBusy(AsteriskChannel asteriskChannel) {
 				Call.this.noAnswer();
 
-				Call.this.log.log(Level.FINER, "Busy: " + asteriskChannel.getName() + " " + Call.this.destination);
+				Call.this.log.log(Level.INFO, "Busy: " + asteriskChannel.getName() + " " + Call.this.destination);
 			}
 
 			@Override
@@ -259,7 +260,7 @@ public class Call extends Thread {
 
 				if (cause.getClass().getCanonicalName().equals("org.asteriskjava.live.NoSuchChannelException")) {
 					// Called when the channel is busy... dunno why
-					Call.this.log.log(Level.FINER, "Channel perhabs busy. " + Call.this.destination);
+					Call.this.log.log(Level.INFO, "Channel perhabs busy. " + Call.this.destination);
 				} else {
 					Call.this.log.log(Level.WARNING, "Received unknown error.\n" + cause + " " + Call.this.destination);
 				}
