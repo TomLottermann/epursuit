@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.asteriskjava.fastagi.AgiScript;
 import org.asteriskjava.fastagi.SimpleMappingStrategy;
@@ -44,8 +45,10 @@ public class EPursuit {
 			
 			Caller caller = new Caller(agentAgi, mrxAgi);
 			
+			Logger.getLogger("org.asteriskjava.live.internal.ChannelManager").setUseParentHandlers(false);
+			Logger.getLogger("org.asteriskjava.live.internal.AsteriskServerImpl").setUseParentHandlers(false);
+			
 			this.shell=new Shell(caller);
-			this.shell.start();
 			
 		} catch (IOException e) {
 			System.out.println("Unable to read properties file. DIED");

@@ -7,6 +7,7 @@ import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiHangupException;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
+import org.asteriskjava.live.AsteriskChannel;
 import org.lotterm.asterisk.epursuit.EPursuit;
 
 /**
@@ -51,38 +52,37 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 		try {
 			// Answer the channel...
 			this.answer();
-
 			// Tell everyone that call started
 			for (AgiCallListener listener : this.listeners) {
 				listener.callStarted(channel.getName());
 			}
-
 			if (this.recordList != null && this.recordList.size() > 0) {
 				// ...play the introduction...
 				this.streamFile(EPursuit.properties.getProperty("agentsIntro"));
-
 				// ...and play the recording
 				for (String recording : this.recordList) {
 					this.streamFile("beep");
 					this.streamFile(EPursuit.properties.getProperty("recordPath") + recording);
 				}
-
 			} else {
 				System.out.println("Error in Agent Agi Script. RecordList empty!");
 				this.sayAlpha("ERROR!");
 			}
-
 			this.hangup();
 		} catch (AgiHangupException e) {
 			// Hangup not fired because we don't care if someone hangs up!
 		}
+		fireListenersFinished(channel);
+	}
 
+	private synchronized void fireListenersFinished(AgiChannel channel) {
 		// Tell everyone that call finished
 		for (AgiCallListener listener : this.listeners) {
 			listener.callFinished(channel.getName());
 		}
+		System.out.println("reached9");
 	}
-
+	
 	@Override
 	public String getExtension() {
 		return "agentAgi";
