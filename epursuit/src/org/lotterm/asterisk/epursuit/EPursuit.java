@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.asteriskjava.fastagi.AgiScript;
@@ -47,6 +48,7 @@ public class EPursuit {
 			
 			Logger.getLogger("org.asteriskjava.live.internal.ChannelManager").setUseParentHandlers(false);
 			Logger.getLogger("org.asteriskjava.live.internal.AsteriskServerImpl").setUseParentHandlers(false);
+			Logger.getLogger("org.asteriskjava.fastagi.internal.AgiConnectionHandler").setUseParentHandlers(false);
 			
 			this.shell=new Shell(caller);
 			
