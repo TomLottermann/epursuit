@@ -10,17 +10,14 @@ import org.asteriskjava.fastagi.BaseAgiScript;
 import org.lotterm.asterisk.epursuit.EPursuit;
 
 /**
- * @author thomas
- * Agi module which plays the recent recordList
+ * @author thomas Agi module which plays the recent recordList
  */
-public class AgentAgi extends BaseAgiScript implements Agi {
+public class FinalAgi extends BaseAgiScript implements Agi {
 
-	protected String extension = "agentAgi";
+	protected String extension = "finalAgi";
 
 	// List of listeners
 	private final ArrayList<AgiCallListener> listeners = new ArrayList<AgiCallListener>();
-
-	private ArrayList<String> recordList;
 
 	/*
 	 * (non-Javadoc)
@@ -33,11 +30,6 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 	public void addListener(AgiCallListener listener) {
 		if (listener != null)
 			this.listeners.add(listener);
-	}
-
-	public void setRecordList(ArrayList<String> recordList) {
-		System.out.println("Setting recordList: " + recordList.size());
-		this.recordList = recordList;
 	}
 
 	/*
@@ -55,18 +47,8 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 			for (AgiCallListener listener : this.listeners) {
 				listener.callStarted(channel.getName());
 			}
-			if (this.recordList != null && this.recordList.size() > 0) {
-				// ...play the introduction...
-				this.streamFile(EPursuit.properties.getProperty("agentsIntro"));
-				// ...and play the recording
-				for (String recording : this.recordList) {
-					this.streamFile("beep");
-					this.streamFile(EPursuit.properties.getProperty("recordPath") + recording);
-				}
-			} else {
-				System.out.println("Error in Agent Agi Script. RecordList empty!");
-				this.sayAlpha("ERROR!");
-			}
+			// ...play the introduction...
+			this.streamFile(EPursuit.properties.getProperty("finalSound"));
 			this.hangup();
 		} catch (AgiHangupException e) {
 			// Hangup not fired because we don't care if someone hangs up!
@@ -80,10 +62,10 @@ public class AgentAgi extends BaseAgiScript implements Agi {
 			listener.callFinished(channel.getName());
 		}
 	}
-	
+
 	@Override
 	public String getExtension() {
-		return "agentAgi";
+		return "finalAgi";
 	}
 
 }

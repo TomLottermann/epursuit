@@ -16,6 +16,7 @@ import org.asteriskjava.manager.TimeoutException;
 import org.lotterm.asterisk.epursuit.EPursuit;
 import org.lotterm.asterisk.epursuit.agi.AgentAgi;
 import org.lotterm.asterisk.epursuit.agi.Agi;
+import org.lotterm.asterisk.epursuit.agi.FinalAgi;
 import org.lotterm.asterisk.epursuit.agi.MrXAgi;
 
 /**
@@ -40,11 +41,15 @@ public class Caller {
 	// The Agi modules where the calls are sent to
 	private MrXAgi mrxAgi;
 	private AgentAgi agentAgi;
-
+	private FinalAgi finalAgi;
+	
 	private Callcycle mrxCalls;
 	private Callcycle agentCalls;
+	private Callcycle finalCalls;
 	
 	private ArrayList<CallerListener> listeners=new ArrayList<CallerListener>();
+
+	
 
 	/**
 	 * Connect to Manager interface of local Asterisk, AsteriskServer and start
@@ -53,7 +58,7 @@ public class Caller {
 	 * @param agentAgi
 	 * @param mrxAgi
 	 */
-	public Caller(AgentAgi agentAgi, MrXAgi mrxAgi) {
+	public Caller(AgentAgi agentAgi, MrXAgi mrxAgi, FinalAgi finalAgi) {
 		
 		// Read in all MrX
 		this.readMrX();
@@ -63,6 +68,7 @@ public class Caller {
 
 		this.mrxAgi = mrxAgi;
 		this.agentAgi = agentAgi;
+		this.finalAgi = finalAgi;
 
 		// Start the ManagerFactory and connect up a manager
 		ManagerConnectionFactory factory = new ManagerConnectionFactory(EPursuit.properties.getProperty("asteriskHost"), EPursuit.properties.getProperty("managerUser"),
@@ -168,11 +174,29 @@ public class Caller {
 			this.makeNextAgentCall();
 		}
 	}
+	
+	/**
+	 * Are all final calls finished?
+	 */
+	private void testForFinalCallsFinished() {
+		if (this.finalCalls.isCallCycleFinished()) {
+			this.log.log(Level.FINE, "Done with final calls");
+			for (CallerListener listener : this.listeners) {
+				listener.finalCallsFinished();
+			}
+			
+			// managerConnection.logoff();
+		} else {
+			this.makeNextFinalCall();
+		}
+	}
 
 	/**
 	 * start calling MrX
 	 */
 	public void callMrX() {
+		this.recordList.clear();
+		
 		this.mrxCalls = new Callcycle();
 		for (String mrxDestination : this.mrxList) {
 			this.log.log(Level.FINER, "Calling: " + mrxDestination);
@@ -292,6 +316,54 @@ public class Caller {
 
 		});
 		call.start();
+	}
+	
+	/**
+	 * Call all agents that the game is over!
+	 */
+	public void finalCall() {
+		this.agentCalls = new Callcycle();
+		try {
+
+			for (String agentDestination : this.agentList) {
+				this.log.log(Level.FINER, "Calling: " + agentDestination);
+				Call call = new Call(agentDestination, this.finalAgi, this.managerConnection, this.asteriskServer);
+				call.addListener(new CallListener() {
+
+					@Override
+					public void callNotAnswered(String destination, Agi extension) {
+						// give up calling that guy!
+						Caller.this.log.log(Level.WARNING, "Giving up to call " + destination);
+
+						Caller.this.testForFinalCallsFinished();
+					}
+
+					@Override
+					public void callFinished(String destination, Agi extension, String channel) {
+						// Call successful => one call less to bother about.
+
+						Caller.this.testForFinalCallsFinished();
+					}
+				});
+				this.finalCalls.add(call);
+
+			}
+			for (int i = 0; i < new Integer(EPursuit.properties.getProperty("maxCalls")); i++)
+				this.makeNextFinalCall();
+
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private void makeNextFinalCall() {
+		if (this.finalCalls.countRunningCalls() <= new Integer(EPursuit.properties.getProperty("maxCalls"))) {
+			Call unusedCall = this.finalCalls.getUnusedCall();
+			// TODO: catch null!!!!
+			unusedCall.start();
+		}
 	}
 
 }

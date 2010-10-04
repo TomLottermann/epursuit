@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.asteriskjava.fastagi.AgiScript;
 import org.asteriskjava.fastagi.SimpleMappingStrategy;
 import org.lotterm.asterisk.epursuit.agi.AgentAgi;
+import org.lotterm.asterisk.epursuit.agi.FinalAgi;
 import org.lotterm.asterisk.epursuit.agi.MrXAgi;
 import org.lotterm.asterisk.epursuit.agi.ThreadedAgiServer;
 import org.lotterm.asterisk.epursuit.caller.Caller;
@@ -39,12 +40,13 @@ public class EPursuit {
 			// create the AGI-modules
 			final AgentAgi agentAgi = new AgentAgi();
 			final MrXAgi mrxAgi = new MrXAgi();
+			final FinalAgi finalAgi = new FinalAgi();
 
 			
 			// start AGI-server
-			this.startServer(agentAgi, mrxAgi);
+			this.startServer(agentAgi, mrxAgi, finalAgi);
 			
-			Caller caller = new Caller(agentAgi, mrxAgi);
+			Caller caller = new Caller(agentAgi, mrxAgi, finalAgi);
 			
 			Logger.getLogger("org.asteriskjava.live.internal.ChannelManager").setUseParentHandlers(false);
 			Logger.getLogger("org.asteriskjava.live.internal.AsteriskServerImpl").setUseParentHandlers(false);
@@ -66,13 +68,14 @@ public class EPursuit {
 	 * @throws IllegalStateException
 	 * @throws IOException
 	 */
-	private void startServer(AgentAgi agentAgi, MrXAgi mrxAgi) throws IllegalStateException, IOException {
+	private void startServer(AgentAgi agentAgi, MrXAgi mrxAgi, FinalAgi finalAgi) throws IllegalStateException, IOException {
 		final SimpleMappingStrategy mapping = new SimpleMappingStrategy();
 
 		final Map<String, AgiScript> mappingMap = new HashMap<String, AgiScript>();
 
 		mappingMap.put(agentAgi.getExtension() + ".agi", agentAgi);
 		mappingMap.put(mrxAgi.getExtension() + ".agi", mrxAgi);
+		mappingMap.put(finalAgi.getExtension() + ".agi", finalAgi);
 
 		mapping.setMappings(mappingMap);
 
