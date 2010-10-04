@@ -5,7 +5,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -211,7 +210,7 @@ public class Call extends Thread {
 					public void propertyChange(PropertyChangeEvent evt) {
 						// is the phone ringing?
 						if (evt.getPropertyName().equals("state") && evt.getNewValue().toString().equals("RINGING")) {
-							log.log(Level.INFO, "Ringing: " + asteriskChannel.getName() + " " + Call.this.destination);
+							Call.this.log.log(Level.INFO, "Ringing: " + asteriskChannel.getName() + " " + Call.this.destination);
 							// Schedule hangup timeout
 							Call.this.timeoutTimer.schedule(new TimerTask() {
 

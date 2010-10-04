@@ -109,6 +109,20 @@ public class Shell {
 				Shell.this.mainThread.start();
 
 			}
+
+			@Override
+			public void finalCallsFinished() {
+				Shell.this.mainThread=new Thread() {
+					public void run() {
+						if (Shell.this.getShellState() == ShellState.FINALCALL) {
+							System.out.println("Final calls finished.");
+							Shell.this.state = ShellState.IDLE;
+							Shell.this.commandPrompt();
+						}
+					}
+				};
+				Shell.this.mainThread.start();
+			}
 		});
 
 		try {
@@ -158,6 +172,11 @@ public class Shell {
 			System.out.println("Calling MrX...");
 			this.state = ShellState.CALLCYCLE;
 			this.caller.callMrX();
+		} else if (line.equals("call final")) {
+			System.out.println("Starting final call...");
+			System.out.println("Calling agents...");
+			this.state = ShellState.FINALCALL;
+			this.caller.finalCall();
 		} else if (line.equals("quit")) {
 			// TODO: Better!!!!! Close manager hangup...
 			System.out.println("Quitting...");
