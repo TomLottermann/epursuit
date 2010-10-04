@@ -25,8 +25,6 @@ public class EPursuit {
 
 	public static Properties properties = new Properties();
 	
-	private Shell shell;
-	
 	/**
 	 * Loads properties, starts AGI, sets Listeners...
 	 * 
@@ -51,8 +49,9 @@ public class EPursuit {
 			Logger.getLogger("org.asteriskjava.live.internal.ChannelManager").setUseParentHandlers(false);
 			Logger.getLogger("org.asteriskjava.live.internal.AsteriskServerImpl").setUseParentHandlers(false);
 			Logger.getLogger("org.asteriskjava.fastagi.internal.AgiConnectionHandler").setUseParentHandlers(false);
+			Logger.getLogger("org.asteriskjava.fastagi.internal.AgiConnectionHandler").setLevel(Level.OFF);
 			
-			this.shell=new Shell(caller);
+			new Shell(caller);
 			
 		} catch (IOException e) {
 			System.out.println("Unable to read properties file. DIED");

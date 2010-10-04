@@ -322,7 +322,7 @@ public class Caller {
 	 * Call all agents that the game is over!
 	 */
 	public void finalCall() {
-		this.agentCalls = new Callcycle();
+		this.finalCalls = new Callcycle();
 		try {
 
 			for (String agentDestination : this.agentList) {
