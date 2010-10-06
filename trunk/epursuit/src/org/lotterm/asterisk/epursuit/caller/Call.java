@@ -166,29 +166,6 @@ public class Call extends Thread {
 
 	}
 
-	private void callRejected() {
-		System.out.println("CALL REJECTED!!!!!!!");
-		try {
-			this.timeoutTimer.cancel();
-		} catch (IllegalStateException e) {
-			System.out.println("Unable to cancel timer");
-		}
-
-		this.timeoutTimer = new Timer();
-
-		// schedule retry
-		this.timeoutTimer.schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				if (!Call.this.success) {
-					Call.this.makeCall();
-				}
-			}
-		}, new Long(EPursuit.properties.getProperty("callTime")) * 2);
-
-	}
-
 	/**
 	 * All the magic happens here. Call and register listeners
 	 */
