@@ -280,7 +280,7 @@ public class Call extends Thread {
 		this.originateAction.setPriority(new Integer(1));
 		// TODO: Which timeout to use? Occurs sometimes when the phone is down
 		// or never receives an event (for some reason)
-		this.originateAction.setTimeout(new Long(60000));
+		this.originateAction.setTimeout(new Long(EPursuit.properties.getProperty("callTime"))+12000);
 		this.originateAction.setAsync(true);
 
 		// make initial call
