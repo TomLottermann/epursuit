@@ -206,9 +206,11 @@ public class Shell {
 		} else if (line.equals("reload mrx")) {
 			System.out.println("Reloading MrX Numbers...");
 			this.caller.readMrX();
+			this.commandPrompt();
 		} else if (line.equals("reload agents")) {
 			System.out.println("Reloading Agent Numbers...");
 			this.caller.readAgents();
+			this.commandPrompt();
 		} else if (line.equals("quit")) {
 			// TODO: Better!!!!! Close manager hangup...
 			System.out.println("Quitting...");
