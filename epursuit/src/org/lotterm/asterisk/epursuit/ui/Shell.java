@@ -177,6 +177,12 @@ public class Shell {
 			System.out.println("Calling agents...");
 			this.state = ShellState.FINALCALL;
 			this.caller.finalCall();
+		} else if (line.equals("reload mrx")) {
+			System.out.println("Reloading MrX Numbers...");
+			this.caller.readMrX();
+		} else if (line.equals("reload agents")) {
+			System.out.println("Reloading Agent Numbers...");
+			this.caller.readAgents();
 		} else if (line.equals("quit")) {
 			// TODO: Better!!!!! Close manager hangup...
 			System.out.println("Quitting...");

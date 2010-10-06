@@ -125,6 +125,7 @@ public class Caller {
 	 * Read in all Agent destinations
 	 */
 	public void readAgents() {
+		this.agentList.clear();
 		try {
 			BufferedReader agentReader = new BufferedReader(new FileReader(EPursuit.properties.getProperty("agentList")));
 			String agentLine;
