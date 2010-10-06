@@ -8,6 +8,10 @@ import jline.ConsoleReader;
 import org.lotterm.asterisk.epursuit.caller.Caller;
 import org.lotterm.asterisk.epursuit.caller.CallerListener;
 
+/**
+ * @author thomas
+ *
+ */
 public class Shell {
 
 	private ArrayList<ShellListener> listeners = new ArrayList<ShellListener>();
@@ -17,12 +21,19 @@ public class Shell {
 
 	private ShellState state = ShellState.IDLE;
 
+	/**
+	 * Main-Thread. Gets overwritten sometimes.
+	 */
 	private Thread mainThread = new Thread() {
 		public void run() {
 			Shell.this.commandPrompt();
 		}
 	};
 	
+	/**
+	 * Constructs the shell.
+	 * @param caller The caller, the shell controls
+	 */
 	public Shell(Caller caller) {
 		this.caller = caller;
 		this.caller.addCallerListener(new CallerListener() {
@@ -133,14 +144,25 @@ public class Shell {
 		this.mainThread.start();
 	}
 
+	/**
+	 * Adds a ShellListener to the shell.
+	 * @param listener
+	 */
 	public void addShellListener(ShellListener listener) {
 		this.listeners.add(listener);
 	}
 
+	/**
+	 * Returns the current ShellState
+	 * @return
+	 */
 	public ShellState getShellState() {
 		return this.state;
 	}
 
+	/**
+	 * Prompts a command
+	 */
 	private void commandPrompt() {
 		if (this.getShellState() == ShellState.IDLE) {
 			try {
@@ -154,6 +176,10 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Called when command prompt receives a new command. Decides, what to do.
+	 * @param line
+	 */
 	private void newCommand(String line) {
 		if (line.equals("call mrx")) {
 			System.out.println("Calling MrX...");
