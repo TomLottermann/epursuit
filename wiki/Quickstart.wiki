@@ -9,7 +9,7 @@
 
 = Commands =
 
-<table padding="10px">
+<table border="1">
 <tr><td>call mrx</td><td>starts calling all Mr X</td></tr>
 <tr><td>call agents</td><td>starts calling all agents (only use it after you have at least once called Mr X)</td></tr>
 </table>
