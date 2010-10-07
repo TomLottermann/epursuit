@@ -1,4 +1,4 @@
-#How to setup and use ePursuit
+# How to setup and use ePursuit
 
 = Quickstart =
 
